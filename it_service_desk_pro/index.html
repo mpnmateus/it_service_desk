@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Chamados Internos de TI — Vanilla JS</title>
+  <!-- Importa a folha de estilos externa -->
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Sistema de Chamados Internos de TI</h1>
+
+    <!-- Abas -->
+    <div class="tabs" role="tablist" aria-label="Seções do sistema">
+      <button class="tab is-active" id="tab-home"   role="tab" aria-selected="true"  aria-controls="home"   data-target="#home">Home</button>
+      <button class="tab"           id="tab-abrir"  role="tab" aria-selected="false" aria-controls="abrir"  data-target="#abrir">Abrir Chamado</button>
+      <button class="tab"           id="tab-lista"  role="tab" aria-selected="false" aria-controls="lista"  data-target="#lista">Lista</button>
+      <button class="tab"           id="tab-detalhe"role="tab" aria-selected="false" aria-controls="detalhe"data-target="#detalhe">Detalhe</button>
+    </div>
+
+    <!-- Painéis -->
+    <section class="panel" id="home" role="tabpanel" aria-labelledby="tab-home">
+      <h2>Resumo</h2>
+      <div class="stats">
+        <div class="card">
+          <strong>Abertos</strong>
+          <div id="kpi-abertos" style="font-size:28px;">0</div>
+        </div>
+        <div class="card">
+          <strong>Em andamento</strong>
+          <div id="kpi-andamento" style="font-size:28px;">0</div>
+        </div>
+        <div class="card">
+          <strong>Fechados</strong>
+          <div id="kpi-fechados" style="font-size:28px;">0</div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:18px;">Últimos 5 chamados</h3>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th></tr>
+          </thead>
+          <tbody id="home-recentes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="abrir" role="tabpanel" aria-labelledby="tab-abrir" hidden>
+      <h2>Abrir novo chamado</h2>
+      <form id="form-chamado" novalidate>
+        <div class="grid grid-2">
+          <div>
+            <label for="f-titulo">Título *</label>
+            <input id="f-titulo" name="titulo" required placeholder="Ex.: Computador não liga" />
+          </div>
+          <div>
+            <label for="f-solicitante">Solicitante</label>
+            <input id="f-solicitante" name="solicitante" placeholder="Ex.: João da Silva" />
+          </div>
+        </div>
+
+        <label for="f-descricao">Descrição *</label>
+        <textarea id="f-descricao" name="descricao" required placeholder="Explique o problema..."></textarea>
+
+        <div class="grid grid-2">
+          <div>
+            <label for="f-categoria">Categoria</label>
+            <select id="f-categoria" name="categoria">
+              <option>Hardware</option>
+              <option>Software</option>
+              <option>Rede</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-prioridade">Prioridade</label>
+            <select id="f-prioridade" name="prioridade">
+              <option>Baixa</option>
+              <option selected>Média</option>
+              <option>Alta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button type="submit" class="btn primary">Criar chamado</button>
+          <span class="muted">Campos com * são obrigatórios.</span>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" id="lista" role="tabpanel" aria-labelledby="tab-lista" hidden>
+      <h2>Chamados</h2>
+
+      <div class="toolbar">
+        <div class="row" style="gap:8px;">
+          <label for="filtro-status" class="sr">Filtro status</label>
+          <select id="filtro-status">
+            <option value="">Todos os status</option>
+            <option>Aberto</option>
+            <option>Em andamento</option>
+            <option>Fechado</option>
+          </select>
+
+          <label for="filtro-prioridade" class="sr">Filtro prioridade</label>
+          <select id="filtro-prioridade">
+            <option value="">Qualquer prioridade</option>
+            <option>Baixa</option>
+            <option>Média</option>
+            <option>Alta</option>
+          </select>
+
+          <label for="busca" class="sr">Busca</label>
+          <input id="busca" placeholder="Buscar por título..." />
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="row">
+          <button id="btn-ordenar-data" class="btn">Ordenar por data</button>
+          <button id="btn-ordenar-prio" class="btn">Ordenar por prioridade</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel" id="detalhe" role="tabpanel" aria-labelledby="tab-detalhe" hidden>
+      <h2>Detalhe do chamado</h2>
+
+      <div id="detalhe-vazio" class="muted">Nenhum chamado selecionado. Abra pela lista.</div>
+
+      <div id="detalhe-conteudo" hidden>
+        <div class="grid grid-2">
+          <div class="card">
+            <strong>Título</strong>
+            <div id="d-titulo"></div>
+            <strong class="mt">Solicitante</strong>
+            <div id="d-solicitante"></div>
+            <strong class="mt">Categoria</strong>
+            <div id="d-categoria"></div>
+          </div>
+          <div class="card">
+            <strong>Status</strong>
+            <div class="row" style="align-items:center;">
+              <select id="d-status">
+                <option>Aberto</option>
+                <option>Em andamento</option>
+                <option>Fechado</option>
+              </select>
+              <button id="d-salvar-status" class="btn primary">Salvar status</button>
+            </div>
+
+            <strong class="mt">Prioridade</strong>
+            <div class="row" style="align-items:center;">
+              <select id="d-prioridade">
+                <option>Baixa</option>
+                <option>Média</option>
+                <option>Alta</option>
+              </select>
+              <button id="d-salvar-prio" class="btn primary">Salvar prioridade</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <strong>Descrição</strong>
+          <p id="d-descricao" style="white-space:pre-wrap"></p>
+        </div>
+
+        <div class="toolbar">
+          <button id="d-excluir" class="btn danger">Excluir chamado</button>
+          <div class="spacer"></div>
+          <button id="d-voltar-lista" class="btn">Voltar para Lista</button>
+        </div>
+
+        <input type="hidden" id="d-id" />
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Chamados Internos de TI — Versão Simplificada</title>
+  <link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Sistema de Chamados Internos de TI</h1>
+
+    <!-- Abas -->
+    <div class="tabs" role="tablist" aria-label="Seções do sistema">
+      <button class="tab is-active" id="tab-home"    role="tab" aria-selected="true"  data-target="#home">Home</button>
+      <button class="tab"           id="tab-abrir"   role="tab" aria-selected="false" data-target="#abrir">Abrir Chamado</button>
+      <button class="tab"           id="tab-lista"   role="tab" aria-selected="false" data-target="#lista">Lista</button>
+      <button class="tab"           id="tab-detalhe" role="tab" aria-selected="false" data-target="#detalhe">Detalhe</button>
+    </div>
+
+    <!-- HOME -->
+    <section class="panel" id="home" role="tabpanel" aria-labelledby="tab-home">
+      <h2>Resumo</h2>
+      <div class="stats">
+        <div class="card">
+          <strong>Abertos</strong>
+          <div id="kpi-abertos" class="kpi">0</div>
+        </div>
+        <div class="card">
+          <strong>Em andamento</strong>
+          <div id="kpi-andamento" class="kpi">0</div>
+        </div>
+        <div class="card">
+          <strong>Fechados</strong>
+          <div id="kpi-fechados" class="kpi">0</div>
+        </div>
+      </div>
+
+      <h3 class="mt-16">Últimos 5 chamados</h3>
+      <div class="card">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th></tr>
+          </thead>
+          <tbody id="home-recentes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ABRIR -->
+    <section class="panel" id="abrir" role="tabpanel" aria-labelledby="tab-abrir" hidden>
+      <h2>Abrir novo chamado</h2>
+
+      <form id="form-chamado" novalidate>
+        <div class="grid grid-2">
+          <div>
+            <label for="f-titulo">Título *</label>
+            <input id="f-titulo" name="titulo" required placeholder="Ex.: Computador não liga" />
+          </div>
+          <div>
+            <label for="f-solicitante">Solicitante</label>
+            <input id="f-solicitante" name="solicitante" placeholder="Ex.: João da Silva" />
+          </div>
+        </div>
+
+        <label for="f-descricao">Descrição *</label>
+        <textarea id="f-descricao" name="descricao" required placeholder="Explique o problema..."></textarea>
+
+        <div class="grid grid-2">
+          <div>
+            <label for="f-categoria">Categoria</label>
+            <select id="f-categoria" name="categoria">
+              <option>Hardware</option>
+              <option>Software</option>
+              <option>Rede</option>
+              <option>Outro</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-prioridade">Prioridade</label>
+            <select id="f-prioridade" name="prioridade">
+              <option>Baixa</option>
+              <option selected>Média</option>
+              <option>Alta</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button type="submit" class="btn primary">Criar chamado</button>
+          <span class="muted">Campos com * são obrigatórios.</span>
+        </div>
+      </form>
+    </section>
+
+    <!-- LISTA -->
+    <section class="panel" id="lista" role="tabpanel" aria-labelledby="tab-lista" hidden>
+      <h2>Chamados</h2>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th><th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- DETALHE (somente leitura) -->
+    <section class="panel" id="detalhe" role="tabpanel" aria-labelledby="tab-detalhe" hidden>
+      <h2>Detalhe do chamado</h2>
+
+      <div id="detalhe-vazio" class="muted">Nenhum chamado selecionado. Abra pela lista.</div>
+
+      <div id="detalhe-conteudo" hidden>
+        <div class="grid grid-2">
+          <div class="card">
+            <strong>Título</strong>
+            <div id="d-titulo"></div>
+            <strong class="mt-8">Solicitante</strong>
+            <div id="d-solicitante">—</div>
+            <strong class="mt-8">Categoria</strong>
+            <div id="d-categoria"></div>
+          </div>
+
+          <div class="card">
+            <strong>Status</strong>
+            <div class="mt-6" id="d-status-text"></div>
+
+            <strong class="mt-12">Prioridade</strong>
+            <div class="mt-6" id="d-prioridade-text"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <strong>Descrição</strong>
+          <p id="d-descricao" class="prewrap"></p>
+        </div>
+
+        <div class="toolbar">
+          <button id="d-excluir" class="btn danger">Excluir chamado</button>
+          <div class="spacer"></div>
+          <button id="d-voltar-lista" class="btn">Voltar para Lista</button>
+        </div>
+
+        <input type="hidden" id="d-id" />
+      </div>
+    </section>
+  </main>
+
+  <!-- Scripts (sem módulos, abre via file://) -->
+  <script src="./js/app.js"></script>
+</body>
+</html>
