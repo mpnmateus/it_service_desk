@@ -1,16 +1,31 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
+  <!-- Metadados essenciais para i18n e responsividade -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <!-- Título da guia do navegador -->
   <title>Sistema de Chamados Internos de TI — Versão Simplificada</title>
+
+  <!-- Importa o CSS do projeto -->
   <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
+  <!--
+    BLOCO: Container principal
+    - Centraliza e limita a largura do conteúdo (definido no CSS).
+    - Mantém toda a aplicação dentro de <main>, semanticamente adequado.
+  -->
   <main class="container">
     <h1>Sistema de Chamados Internos de TI</h1>
 
-    <!-- Abas -->
+    <!--
+      BLOCO: Abas (tabs)
+      - role="tablist" e role="tab" melhoram acessibilidade (navegação por leitores de tela).
+      - Cada botão tem data-target apontando para a seção (panel) correspondente.
+      - A classe .is-active marca a aba selecionada visualmente.
+    -->
     <div class="tabs" role="tablist" aria-label="Seções do sistema">
       <button class="tab is-active" id="tab-home"    role="tab" aria-selected="true"  data-target="#home">Home</button>
       <button class="tab"           id="tab-abrir"   role="tab" aria-selected="false" data-target="#abrir">Abrir Chamado</button>
@@ -18,10 +33,16 @@
       <button class="tab"           id="tab-detalhe" role="tab" aria-selected="false" data-target="#detalhe">Detalhe</button>
     </div>
 
-    <!-- HOME -->
+    <!--
+      PAINEL: HOME
+      - KPIs (Abertos, Em andamento, Fechados)
+      - Tabela de últimos 5 chamados
+      - hidden é controlado via JS ao trocar de aba
+    -->
     <section class="panel" id="home" role="tabpanel" aria-labelledby="tab-home">
       <h2>Resumo</h2>
       <div class="stats">
+        <!-- Cada card mostra um KPI, que o JS preenche com a contagem atual -->
         <div class="card">
           <strong>Abertos</strong>
           <div id="kpi-abertos" class="kpi">0</div>
@@ -40,18 +61,25 @@
       <div class="card">
         <table>
           <thead>
+            <!-- Cabeçalho fixo (sem sticky), só para rótulos -->
             <tr><th>#</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th></tr>
           </thead>
-          <tbody id="home-recentes"></tbody>
+          <tbody id="home-recentes"><!-- JS injeta as linhas aqui --></tbody>
         </table>
       </div>
     </section>
 
-    <!-- ABRIR -->
+    <!--
+      PAINEL: ABRIR CHAMADO
+      - Formulário com validação básica (required no HTML + verificação no JS).
+      - Campos essenciais: título, descrição, solicitante (opcional), categoria e prioridade.
+    -->
     <section class="panel" id="abrir" role="tabpanel" aria-labelledby="tab-abrir" hidden>
       <h2>Abrir novo chamado</h2>
 
+      <!-- novalidate: deixamos a validação a cargo do JS -->
       <form id="form-chamado" novalidate>
+        <!-- Grid 2 colunas (responsivo cai para 1 no CSS @media) -->
         <div class="grid grid-2">
           <div>
             <label for="f-titulo">Título *</label>
@@ -86,6 +114,7 @@
           </div>
         </div>
 
+        <!-- Toolbar com CTA e dica de obrigatoriedade -->
         <div class="toolbar">
           <button type="submit" class="btn primary">Criar chamado</button>
           <span class="muted">Campos com * são obrigatórios.</span>
@@ -93,7 +122,12 @@
       </form>
     </section>
 
-    <!-- LISTA -->
+    <!--
+      PAINEL: LISTA DE CHAMADOS
+      - Tabela principal (read/update/delete).
+      - A coluna Status tem um <select> para mudar o estado inline.
+      - Ações: Abrir (detalhe) e Excluir (remoção permanente).
+    -->
     <section class="panel" id="lista" role="tabpanel" aria-labelledby="tab-lista" hidden>
       <h2>Chamados</h2>
 
@@ -104,17 +138,24 @@
               <th>#</th><th>Título</th><th>Status</th><th>Prioridade</th><th>Criado</th><th>Ações</th>
             </tr>
           </thead>
-          <tbody id="lista-body"></tbody>
+          <tbody id="lista-body"><!-- JS injeta as linhas aqui --></tbody>
         </table>
       </div>
     </section>
 
-    <!-- DETALHE (somente leitura) -->
+    <!--
+      PAINEL: DETALHE DO CHAMADO (somente leitura)
+      - Mostra os dados básicos do ticket.
+      - Botões: Excluir e Voltar (para lista).
+      - O input hidden #d-id guarda o ID do chamado atualmente carregado.
+    -->
     <section class="panel" id="detalhe" role="tabpanel" aria-labelledby="tab-detalhe" hidden>
       <h2>Detalhe do chamado</h2>
 
+      <!-- Estado "vazio" (nenhum item selecionado) -->
       <div id="detalhe-vazio" class="muted">Nenhum chamado selecionado. Abra pela lista.</div>
 
+      <!-- Conteúdo quando há um chamado selecionado -->
       <div id="detalhe-conteudo" hidden>
         <div class="grid grid-2">
           <div class="card">
@@ -135,23 +176,29 @@
           </div>
         </div>
 
+        <!-- Bloco de descrição ocupando toda a largura -->
         <div class="card">
           <strong>Descrição</strong>
           <p id="d-descricao" class="prewrap"></p>
         </div>
 
+        <!-- Ações no detalhe -->
         <div class="toolbar">
           <button id="d-excluir" class="btn danger">Excluir chamado</button>
           <div class="spacer"></div>
           <button id="d-voltar-lista" class="btn">Voltar para Lista</button>
         </div>
 
+        <!-- Guarda o ID do chamado atual (não exibido) -->
         <input type="hidden" id="d-id" />
       </div>
     </section>
   </main>
 
-  <!-- Scripts (sem módulos, abre via file://) -->
+  <!--
+    Importa o JS. 
+    Observação: sem módulos ES para funcionar com file:// em ambiente acadêmico.
+  -->
   <script src="./js/app.js"></script>
 </body>
 </html>
