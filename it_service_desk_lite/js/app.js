@@ -1,5 +1,5 @@
 // ======================================================================
-// IT Service Desk Lite — app.js
+// IT Service Desk Lite — app.js (versão explícita, sem $/$$)
 // Arquitetura: SPA simples com HTML/CSS/JS puros, sem módulos e sem build.
 // Persistência: localStorage (chave única).
 // Foco didático: DOM, eventos, estado em memória + persistência local.
@@ -10,33 +10,40 @@
 
 /* ======================================================================
    SEÇÃO 1 — UTILITÁRIOS DE DOM E FORMATAÇÃO
-   - Objetivo: reduzir verbosidade em querySelector e padronizar formatação de datas.
-   - Padrão: $ e $$ são helpers comuns em apps que manipulam muito DOM.
+   - Objetivo: reduzir verbosidade de seleção no DOM e padronizar datas.
+   - Padrão: helpers explícitos e autoexplicativos (byId/select/selectAll).
    ====================================================================== */
 
 /**
- * Atalho para document.querySelector.
+ * Atalho para document.getElementById — o mais rápido para #id.
+ * @param {string} id - Identificador do elemento sem o prefixo '#'.
+ * @returns {HTMLElement|null} Elemento com o ID informado ou null.
+ */
+const byId = (id) => document.getElementById(id);
+
+/**
+ * Atalho para document.querySelector (suporta #id, .classe, seletores compostos).
  * @param {string} sel - Seletor CSS (ex.: '#id', '.classe', 'div > span').
- * @param {ParentNode} [root=document] - Raiz opcional para escopo (ex.: um card específico).
+ * @param {ParentNode} [root=document] - Raiz opcional para escopo local.
  * @returns {Element|null} Primeiro elemento que casar com o seletor ou null.
  */
-const $  = (sel, root = document) => root.querySelector(sel);
+const select = (sel, root = document) => root.querySelector(sel);
 
 /**
  * Atalho para document.querySelectorAll com conversão para Array real.
- * Útil para usar métodos de array (map/filter/reduce) nos nós retornados.
- * @param {string} sel
- * @param {ParentNode} [root=document]
+ * Útil para usar map/filter/reduce nos nós retornados.
+ * @param {string} sel - Seletor CSS.
+ * @param {ParentNode} [root=document] - Raiz opcional para escopo local.
  * @returns {Element[]} Array de elementos.
  */
-const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const selectAll = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 /**
  * Formata timestamp (em milissegundos) no locale pt-BR.
  * @param {number} ms - Epoch time em milissegundos (ex.: Date.now()).
  * @returns {string} Data e hora legíveis conforme configuração local.
  */
-const fmt = (ms) => new Date(ms).toLocaleString('pt-BR');
+const formatDateTime = (ms) => new Date(ms).toLocaleString('pt-BR');
 
 
 /* ======================================================================
@@ -150,8 +157,8 @@ const store = {
     const now = Date.now();                    // Carimbo de data/hora para criação/atualização
     return {
       id: uid(),                               // ID único textual
-      titulo: titulo.trim(),                   // Normaliza espaços do título
-      descricao: descricao.trim(),             // Normaliza espaços da descrição
+      titulo: String(titulo||'').trim(),       // Normaliza espaços do título
+      descricao: String(descricao||'').trim(), // Normaliza espaços da descrição
       categoria,                               // Categoria (string)
       prioridade,                              // Prioridade (string)
       status: 'Aberto',                        // Estado inicial padrão
@@ -185,10 +192,10 @@ const store = {
    ====================================================================== */
 
 /** Seleciona todos os botões de aba (quatro) */
-const tabs = $$('.tab');
+const tabs = selectAll('.tab');
 
 /** Guarda referência da aba atualmente ativa (começa em "Home") */
-let currentTab = $('#tab-home');
+let currentTab = byId('tab-home');
 
 /**
  * Dado um botão de aba, retorna o painel alvo (#home, #abrir, #lista, #detalhe).
@@ -196,8 +203,8 @@ let currentTab = $('#tab-home');
  * @param {HTMLButtonElement} btn
  * @returns {HTMLElement} section.panel correspondente
  */
-function targetFromTab(btn){
-  return document.querySelector(btn.getAttribute('data-target')); // resolve seletor em elemento
+function getPanelForTab(btn){
+  return select(btn.getAttribute('data-target')); // resolve seletor em elemento
 }
 
 /**
@@ -207,34 +214,34 @@ function targetFromTab(btn){
  * - Renderiza conteúdo da aba que acabou de abrir (Home/Lista/Detalhe).
  * @param {HTMLButtonElement} btn
  */
-function showTab(btn){
+function activateTab(btn){
   if (!btn || btn === currentTab) return;      // Ignora se null ou já está ativa
 
   // 1) Esconde painel da aba atual e limpa estados visuais
-  targetFromTab(currentTab).hidden = true;     // Painel anterior fica oculto
-  currentTab.classList.remove('is-active');    // Remove estilo de “ativa”
+  getPanelForTab(currentTab).hidden = true;     // Painel anterior fica oculto
+  currentTab.classList.remove('is-active');     // Remove estilo de “ativa”
   currentTab.setAttribute('aria-selected','false'); // Acessibilidade: não selecionada
 
   // 2) Mostra painel da nova aba e aplica estados
-  targetFromTab(btn).hidden = false;           // Novo painel visível
-  btn.classList.add('is-active');              // Estilo de “ativa”
-  btn.setAttribute('aria-selected','true');    // Acessibilidade: selecionada
+  getPanelForTab(btn).hidden = false;           // Novo painel visível
+  btn.classList.add('is-active');               // Estilo de “ativa”
+  btn.setAttribute('aria-selected','true');     // Acessibilidade: selecionada
 
   // 3) Atualiza referência e foca a nova aba
-  currentTab = btn;                            // Guarda qual é a aba corrente
-  btn.focus();                                 // Move o foco de teclado
+  currentTab = btn;                             // Guarda qual é a aba corrente
+  btn.focus();                                  // Move o foco de teclado
 
   // 4) Renderiza conteúdos específicos da aba aberta
-  const id = targetFromTab(btn).id;            // id do painel ativo
-  if (id === 'home')    renderHome();          // Atualiza KPIs e últimos chamados
-  if (id === 'lista')   renderList();          // Atualiza tabela completa
-  if (id === 'detalhe') renderDetail();        // Se houver item selecionado, mostra; senão, vazio
+  const id = getPanelForTab(btn).id;            // id do painel ativo
+  if (id === 'home')    renderHome();           // Atualiza KPIs e últimos chamados
+  if (id === 'lista')   renderList();           // Atualiza tabela completa
+  if (id === 'detalhe') renderDetail();         // Se houver item selecionado, mostra; senão, vazio
 }
 
-/** Registra o clique em cada aba para acionar showTab (sem mudar URL/hash) */
+/** Registra o clique em cada aba para acionar activateTab (sem mudar URL/hash) */
 tabs.forEach(t => t.addEventListener('click', e => {
-  e.preventDefault();  // Evita qualquer efeito padrão de botão/form
-  showTab(t);          // Alterna para a aba clicada
+  e.preventDefault();              // Evita qualquer efeito padrão de botão/form
+  activateTab(t);                  // Alterna para a aba clicada
 }));
 
 
@@ -255,15 +262,15 @@ function renderHome(){
   const all = store.all(); // Snapshot atual de todos os chamados (array)
 
   // KPIs — filtramos por status e contamos o tamanho de cada subconjunto
-  $('#kpi-abertos').textContent   = all.filter(c => c.status === 'Aberto').length;
-  $('#kpi-andamento').textContent = all.filter(c => c.status === 'Em andamento').length;
-  $('#kpi-fechados').textContent  = all.filter(c => c.status === 'Fechado').length;
+  byId('kpi-abertos').textContent   = all.filter(c => c.status === 'Aberto').length;
+  byId('kpi-andamento').textContent = all.filter(c => c.status === 'Em andamento').length;
+  byId('kpi-fechados').textContent  = all.filter(c => c.status === 'Fechado').length;
 
   // “Recentes” — clona o array, ordena por criadoEm (descendente), pega os 5 primeiros
   const recentes = [...all].sort((a,b)=> b.criadoEm - a.criadoEm).slice(0,5);
 
   // Alvo para injeção de linhas
-  const tbody = $('#home-recentes');
+  const tbody = byId('home-recentes');
   tbody.innerHTML = ''; // Zera antes de repintar (idempotente)
 
   // Para cada chamado recente, cria uma <tr> com as colunas e adiciona ao tbody
@@ -275,7 +282,7 @@ function renderHome(){
       <td>${c.titulo}</td>
       <td>${c.status}</td>
       <td>${c.prioridade}</td>
-      <td>${fmt(c.criadoEm)}</td>`;
+      <td>${formatDateTime(c.criadoEm)}</td>`;
     tbody.appendChild(tr); // Insere a linha na tabela
   });
 }
@@ -288,15 +295,15 @@ function renderHome(){
    ====================================================================== */
 
 /** Referência ao formulário de “Abrir Chamado” */
-const form = $('#form-chamado');
+const form = byId('form-chamado');
 
 /** Listener para o envio (submit) do formulário */
 form.addEventListener('submit', (ev) => {
   ev.preventDefault(); // Evita recarregar a página (comportamento padrão do form)
 
   // Lê e normaliza campos obrigatórios
-  const titulo = $('#f-titulo').value.trim();     // Remove espaços nas pontas
-  const descricao = $('#f-descricao').value.trim();
+  const titulo = byId('f-titulo').value.trim();     // Remove espaços nas pontas
+  const descricao = byId('f-descricao').value.trim();
 
   // Validação mínima (campos obrigatórios)
   if (!titulo || !descricao) {
@@ -308,9 +315,9 @@ form.addEventListener('submit', (ev) => {
   const novo = store.create({
     titulo,
     descricao,
-    categoria: $('#f-categoria').value,          // Lê valor selecionado da categoria
-    prioridade: $('#f-prioridade').value,        // Lê valor selecionado da prioridade
-    solicitante: $('#f-solicitante').value.trim()// Opcional, normalizado
+    categoria:  byId('f-categoria').value,           // Lê valor selecionado da categoria
+    prioridade: byId('f-prioridade').value,          // Lê valor selecionado da prioridade
+    solicitante: byId('f-solicitante').value.trim()  // Opcional, normalizado
   });
 
   // Persiste no “banco”
@@ -320,7 +327,7 @@ form.addEventListener('submit', (ev) => {
   form.reset();
 
   // Navega para a aba "Lista" e atualiza a tabela
-  showTab($('#tab-lista'));
+  activateTab(byId('tab-lista'));
   renderList(); // Garante que o novo item apareça imediatamente
 });
 
@@ -340,15 +347,15 @@ form.addEventListener('submit', (ev) => {
  * - Cria linhas <tr> com:
  *   - ID curto, título, <select status>, prioridade, criadoEm, botões.
  * - Registra dois manipuladores “delegados” no tbody:
- *   - onchange para o <select.status>
- *   - onclick para botões “Abrir” e “Excluir”
+ *   - change para o <select.status>
+ *   - click para botões “Abrir” e “Excluir”
  */
 function renderList() {
   // Snapshot dos dados ordenado do mais recente para o mais antigo
   const data = [...store.all()].sort((a,b)=> b.criadoEm - a.criadoEm);
 
   // Alvo de injeção da tabela
-  const tbody = $('#lista-body');
+  const tbody = byId('lista-body');
   tbody.innerHTML = ''; // Limpa antes de repintar
 
   // Para cada chamado, criamos uma linha com colunas e ações
@@ -369,53 +376,54 @@ function renderList() {
         </select>
       </td>
       <td>${c.prioridade}</td>
-      <td>${fmt(c.criadoEm)}</td>
+      <td>${formatDateTime(c.criadoEm)}</td>
       <td>
-        <button class="abrir btn"   data-id="${c.id}">Abrir</button>
-        <button class="excluir btn danger" data-id="${c.id}">Excluir</button>
+        <button class="abrir btn"            data-id="${c.id}">Abrir</button>
+        <button class="excluir btn danger"   data-id="${c.id}">Excluir</button>
       </td>`;
 
     tbody.appendChild(tr); // Adiciona a linha na tabela
   });
+}
 
-  // --- Delegação de eventos no <tbody> ---
-  // Vantagem: registramos apenas 1 listener para “n” linhas.
+// --- Delegação de eventos no <tbody> ---
+// Vantagem: registramos apenas 1 listener para “n” linhas (mais leve e simples).
+const listBody = byId('lista-body');
 
-  // 1) UPDATE de status — reage a alterações nos <select.status>
-  tbody.onchange = (e) => {
-    const sel = e.target.closest('select.status'); // Verifica se a origem é um <select.status>
-    if (!sel) return;                              // Se não for, ignora
-    store.update(sel.dataset.id, { status: sel.value }); // Atualiza o campo status
-    renderHome();                                  // KPIs podem ter mudado — repinta Home
-  };
+/** 1) UPDATE de status — reage a alterações nos <select.status> */
+listBody.addEventListener('change', (e) => {
+  const sel = e.target.closest('select.status'); // Verifica se a origem é um <select.status>
+  if (!sel) return;                              // Se não for, ignora
+  store.update(sel.dataset.id, { status: sel.value }); // Atualiza o campo status
+  renderHome();                                  // KPIs podem ter mudado — repinta Home
+});
 
-  // 2) Ações de Abrir/Excluir — clique em botões
-  tbody.onclick = (e) => {
-    const btn = e.target.closest('button'); // Captura o botão mais próximo (se existir)
-    if (!btn) return;                        // Se não clicou em botão, ignora
-    const id = btn.dataset.id;              // Recupera o ID do chamado alvo
+/** 2) Ações de Abrir/Excluir — clique em botões */
+listBody.addEventListener('click', (e) => {
+  const btn = e.target.closest('button'); // Captura o botão mais próximo (se existir)
+  if (!btn) return;                        // Se não clicou em botão, ignora
+  const id = btn.dataset.id;              // Recupera o ID do chamado alvo
 
-    if (btn.classList.contains('abrir')) {
-      // “Abrir” → carrega o detalhe e muda de aba
-      $('#d-id').value = id;       // Guarda ID do chamado selecionado no input hidden
-      renderDetail();              // Renderiza o conteúdo do detalhe
-      showTab($('#tab-detalhe'));  // Troca aba para “Detalhe”
+  if (btn.classList.contains('abrir')) {
+    // “Abrir” → carrega o detalhe e muda de aba
+    byId('d-id').value = id;       // Guarda ID do chamado selecionado no input hidden
+    renderDetail();                // Renderiza o conteúdo do detalhe
+    activateTab(byId('tab-detalhe'));  // Troca aba para “Detalhe”
 
-    } else if (btn.classList.contains('excluir')) {
-      // “Excluir” → pede confirmação e remove o item
-      if (confirm('Excluir chamado permanentemente?')) { // Diálogo nativo simples
-        store.remove(id);      // Remove do “banco”
-        renderHome();          // Pode afetar KPIs
-        renderList();          // Atualiza a tabela
+  } else if (btn.classList.contains('excluir')) {
+    // “Excluir” → pede confirmação e remove o item
+    if (confirm('Excluir chamado permanentemente?')) { // Diálogo nativo simples
+      store.remove(id);      // Remove do “banco”
+      renderHome();          // Pode afetar KPIs
+      renderList();          // Atualiza a tabela
 
-        // Se o detalhe estava mostrando esse mesmo chamado, limpa-o
-        if ($('#d-id').value === id) {
-          clearDetail();       // Estado “vazio” do detalhe
-        }
+      // Se o detalhe estava mostrando esse mesmo chamado, limpa-o
+      if (byId('d-id').value === id) {
+        clearDetail();       // Estado “vazio” do detalhe
       }
     }
-  };
-}
+  }
+});
 
 
 /* ======================================================================
@@ -430,9 +438,9 @@ function renderList() {
  * - Útil ao excluir item que estava aberto ou ao chegar sem ID.
  */
 function clearDetail(){
-  $('#detalhe-vazio').hidden = false;  // Mostra mensagem “Nenhum chamado selecionado”
-  $('#detalhe-conteudo').hidden = true;// Esconde o conteúdo detalhado
-  $('#d-id').value = '';               // Limpa o ID armazenado
+  byId('detalhe-vazio').hidden = false;  // Mostra mensagem “Nenhum chamado selecionado”
+  byId('detalhe-conteudo').hidden = true;// Esconde o conteúdo detalhado
+  byId('d-id').value = '';               // Limpa o ID armazenado
 }
 
 /**
@@ -440,51 +448,51 @@ function clearDetail(){
  * - Se não houver ID ou o item não existir mais, cai para estado “vazio”.
  */
 function renderDetail(){
-  const id = $('#d-id').value;         // Lê o ID atual do input hidden
-  if (!id) {                           // Sem ID → nada a exibir
+  const id = byId('d-id').value;         // Lê o ID atual do input hidden
+  if (!id) {                             // Sem ID → nada a exibir
     clearDetail();
     return;
   }
 
-  const c = store.get(id);             // Busca o chamado no “banco”
-  if (!c)  {                           // Não existe (pode ter sido excluído)
+  const c = store.get(id);               // Busca o chamado no “banco”
+  if (!c)  {                             // Não existe (pode ter sido excluído)
     clearDetail();
     return;
   }
 
   // Exibe conteúdo e esconde o placeholder
-  $('#detalhe-vazio').hidden = true;
-  $('#detalhe-conteudo').hidden = false;
+  byId('detalhe-vazio').hidden = true;
+  byId('detalhe-conteudo').hidden = false;
 
   // Preenche campos do detalhe com dados do chamado
-  $('#d-titulo').textContent          = c.titulo;
-  $('#d-solicitante').textContent     = c.solicitante || '—'; // Em falta, exibe travessão
-  $('#d-categoria').textContent       = c.categoria;
-  $('#d-descricao').textContent       = c.descricao;
-  $('#d-status-text').textContent     = c.status;
-  $('#d-prioridade-text').textContent = c.prioridade;
+  byId('d-titulo').textContent          = c.titulo;
+  byId('d-solicitante').textContent     = c.solicitante || '—'; // Em falta, exibe travessão
+  byId('d-categoria').textContent       = c.categoria;
+  byId('d-descricao').textContent       = c.descricao;
+  byId('d-status-text').textContent     = c.status;
+  byId('d-prioridade-text').textContent = c.prioridade;
 }
 
 /** Botão “Excluir” dentro do painel Detalhe */
-$('#d-excluir').addEventListener('click', () => {
-  const id = $('#d-id').value;        // ID atualmente aberto
-  if (!id) return;                    // Sem ID → nada a fazer
+byId('d-excluir').addEventListener('click', () => {
+  const id = byId('d-id').value;        // ID atualmente aberto
+  if (!id) return;                      // Sem ID → nada a fazer
 
   if (confirm('Excluir este chamado?')) { // Confirma ação destrutiva
     store.remove(id);                 // Remove do “banco”
     renderHome();                     // Atualiza KPIs
     renderList();                     // Atualiza tabela
     clearDetail();                    // Volta para estado “vazio” no detalhe
-    showTab($('#tab-lista'));         // Retorna à aba “Lista”
+    activateTab(byId('tab-lista'));   // Retorna à aba “Lista”
   }
 });
 
 /** Botão “Voltar para Lista” no painel Detalhe */
-$('#d-voltar-lista').addEventListener('click', () => showTab($('#tab-lista')));
+byId('d-voltar-lista').addEventListener('click', () => activateTab(byId('tab-lista')));
 
 
 /* ======================================================================
-   SEÇÃO 8 — BOOTSTRAP (INICIALIZAÇÃO DA APP)
+   SEÇÃO 8 — INICIALIZAÇÃO DA APP
    - Semeia DB se estiver vazio (3 exemplos úteis).
    - Renderiza Home e Lista (estado consistente ao abrir).
    ====================================================================== */
