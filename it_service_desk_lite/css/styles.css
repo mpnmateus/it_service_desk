@@ -1,302 +1,238 @@
 /* ======================================================================
    IT Service Desk Lite — styles.css
    Objetivo: estilos base, tokens (design system), grid/flex, tabelas,
-   formulários, botões, componentes (abas, painéis, cards) e responsividade.
+   formulários, botões, componentes (abas, painéis, cards), responsividade
+   e RODAPÉ FIXO com identificação dos autores.
 
-   Como ler:
-   - Antes de cada bloco há comentários de contexto.
-   - Em quase todas as linhas há comentários curtos explicando "o porquê".
+   Nota sobre o rodapé:
+   - Usamos position: fixed; bottom: 0; left: 0; right: 0; para manter
+     o rodapé sempre visível.
+   - Para evitar que o conteúdo fique oculto sob o rodapé, damos
+     padding-bottom no container principal equivalente à altura do rodapé.
+   - Altura do rodapé controlada por variável --footer-h.
    ====================================================================== */
 
 
 /* ===========================
    RESET BÁSICO E BOX MODEL
-   - Garante que padding/border somem dentro da largura/altura declarada.
    =========================== */
 *,
 *::before,
-*::after { box-sizing: border-box; } /* Evita cálculos inconsistentes de layout */
-
+*::after { box-sizing: border-box; }
 
 /* ===========================
    TOKENS / DESIGN SYSTEM
-   - Variáveis CSS centralizam cores, raios, sombras, tipografia.
-   - Facilita troca de tema e manutenção.
    =========================== */
 :root{
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; /* Tipografia nativa performática */
-  line-height: 1.4; /* Altura de linha confortável para leitura */
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.4;
 
-  --bg-main:#0f1c36;   /* Cor de fundo da página (azul escuro) */
-  --fg:#eaf2ff;        /* Cor de texto padrão no body (alto contraste no fundo escuro) */
+  --bg-main:#0f1c36;
+  --fg:#eaf2ff;
 
-  --panel-bg:#c4d7f2;     /* Fundo dos painéis (contraste com body) */
-  --panel-border:#222;    /* Borda sutil nos painéis (escura para contraste) */
+  --panel-bg:#c4d7f2;
+  --panel-border:#222;
 
-  --tab-bg:#d9e5ff;       /* Cor padrão da aba inativa */
-  --tab-bg-active:#bcd0ff; /* Cor da aba ativa (levemente mais escura) */
-  --tab-bar:#2f2f2f;      /* Fundo da barra que contém as abas */
+  --tab-bg:#d9e5ff;
+  --tab-bg-active:#bcd0ff;
+  --tab-bar:#2f2f2f;
 
-  --card-bg:#f4f8ff;      /* Fundo dos cartões (cards) */
-  --card-border:#b8cceb;  /* Borda dos cards (suave) */
+  --card-bg:#f4f8ff;
+  --card-border:#b8cceb;
 
-  --btn:#101826;          /* Cor base dos botões “neutros” */
-  --btn-hover:#152238;    /* Cor no hover (um pouco mais clara) */
-  --btn-ok:#2c9c6a;       /* Botão principal (confirmação/ação) */
-  --btn-danger:#c4494a;   /* Botão destrutivo (excluir) */
+  --btn:#101826;
+  --btn-hover:#152238;
+  --btn-ok:#2c9c6a;
+  --btn-danger:#c4494a;
 
-  --shadow:0 4px 12px rgba(5,10,25,.45); /* Sombra padrão para volume */
-  --radius:8px;           /* Raio padrão para cantos arredondados */
+  --shadow:0 4px 12px rgba(5,10,25,.45);
+  --radius:8px;
+
+  /* ----- Tokens exclusivos do rodapé ----- */
+  --footer-bg: rgba(15, 28, 54, 0.92); /* Fundo semitransparente para ver o conteúdo “passar” */
+  --footer-border:#183055;             /* Linha sutil no topo do rodapé (separador) */
+  --footer-fg:#eaf2ff;                 /* Texto do rodapé (alto contraste) */
+  --footer-h: 56px;                    /* Altura base do rodapé (usada para padding inferior) */
 }
 
-/* ===========================
-   ACESSIBILIDADE DE MOVIMENTO
-   - Respeita quem reduz animações no SO.
-   =========================== */
-@media (prefers-reduced-motion: reduce) { *{transition:none !important;} } /* Remove transições */
-
+/* Acessibilidade: respeita preferência do usuário por menos animação */
+@media (prefers-reduced-motion: reduce) { *{transition:none !important;} }
 
 /* ===========================
    BASE / LAYOUT GERAL
    =========================== */
 body{
-  margin:0;                    /* Remove margem padrão do body */
-  background:var(--bg-main);   /* Usa o token de fundo escuro */
-  color:var(--fg);             /* Texto claro sobre fundo escuro */
+  margin:0;
+  background:var(--bg-main);
+  color:var(--fg);
 }
 
+/* Container central que segura o conteúdo da app */
 .container{
-  max-width:1000px;  /* Limita linha de leitura a 1000px para conforto */
-  margin:32px auto;  /* Centraliza horizontalmente e adiciona espaçamento vertical */
-  padding:0 16px;    /* Respiro lateral em telas menores */
+  max-width:1000px;
+  margin:32px auto;
+  padding:0 16px;
+
+  /* ---- IMPORTANTE: resguarda espaço do rodapé fixo ----
+     - Evita que o final do conteúdo fique coberto pelo rodapé.
+     - Usa a variável --footer-h como “reserva” de espaço.
+  */
+  padding-bottom: var(--footer-h);
 }
 
-h1{ margin:0 0 12px; } /* Zera topo e adiciona margem inferior para ritmo */
-
-/* Garante preservação de quebras de linha no conteúdo (ex.: descrição do chamado) */
+h1{ margin:0 0 12px; }
 .prewrap{ white-space:pre-wrap; }
 
-/* Utilitários de espaçamento — classes aditivas para ritmo vertical/horizontal */
+/* Utilitários de espaçamento */
 .mt-6{ margin-top:6px; }
 .mt-8{ margin-top:8px; }
 .mt-12{ margin-top:12px; }
 .mt-16{ margin-top:16px; }
-.muted{ opacity:.7; } /* Texto “apagado” para informações auxiliares */
-.spacer{ flex:1; }    /* Ocupa espaço flexível em toolbars para “empurrar” elementos */
-
+.muted{ opacity:.7; }
+.spacer{ flex:1; }
 
 /* ===========================
    ABAS (Tabs)
-   - Contêm botões que alternam painéis.
    =========================== */
 .tabs{
-  display:flex;              /* Alinha as abas lado a lado */
-  gap:6px;                   /* Espaço entre as abas */
-  padding:8px;               /* Respiro interno da barra */
-  background:var(--tab-bar); /* Fundo escuro para contraste com as abas */
-  border-radius:10px 10px 0 0; /* Cantos superiores arredondados (encaixa no painel) */
+  display:flex;
+  gap:6px;
+  padding:8px;
+  background:var(--tab-bar);
+  border-radius:10px 10px 0 0;
 }
-
 .tab{
-  border:1px solid #222;        /* Borda sutil que define a aba */
-  background:var(--tab-bg);     /* Cor base da aba inativa */
-  padding:6px 14px;             /* Área clicável confortável */
-  border-radius:8px 8px 0 0;    /* Cantos superiores arredondados (aba) */
-  cursor:pointer;               /* Indica interatividade */
-  color:#111;                   /* Texto escuro sobre aba clara */
-  font-weight:600;              /* Dá ênfase ao rótulo da aba */
-  transition:                   /* Suaviza feedback visual */
-    transform .15s ease, 
-    background .15s ease, 
-    box-shadow .15s ease;
+  border:1px solid #222;
+  background:var(--tab-bg);
+  padding:6px 14px;
+  border-radius:8px 8px 0 0;
+  cursor:pointer;
+  color:#111;
+  font-weight:600;
+  transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
 }
-
-.tab.is-active{
-  transform:translateY(-2px); /* “Levanta” a aba ativa para indicar seleção */
-  background:var(--tab-bg-active); /* Usa a cor da aba ativa */
-}
-
-.tab:not(.is-active):hover{
-  box-shadow:0 1px 0 rgba(0,0,0,.15) inset; /* Realce sutil ao passar o mouse */
-}
-
-.tab:focus-visible{
-  outline:3px solid rgba(100,150,250,.45); /* Contorno acessível no foco por teclado */
-  outline-offset:2px;                       /* Afasta o contorno da borda */
-}
-
+.tab.is-active{ transform:translateY(-2px); background:var(--tab-bg-active); }
+.tab:not(.is-active):hover{ box-shadow:0 1px 0 rgba(0,0,0,.15) inset; }
+.tab:focus-visible{ outline:3px solid rgba(100,150,250,.45); outline-offset:2px; }
 
 /* ===========================
    PAINÉIS (Panels)
-   - Conteúdo mostrado de acordo com a aba ativa.
    =========================== */
 .panel{
-  background:var(--panel-bg);      /* Fundo claro para conteúdo */
-  color:#0f151b;                   /* Texto escuro dentro do painel */
-  border:1px solid var(--panel-border); /* Delimita painel */
-  border-top:none;                 /* Some com borda superior (encaixe sob a barra de abas) */
-  border-radius:0 0 10px 10px;     /* Cantos inferiores arredondados */
-  padding:16px;                    /* Espaçamento interno */
-  min-height:320px;                /* Altura mínima para evitar “pulos” ao trocar abas */
+  background:var(--panel-bg);
+  color:#0f151b;
+  border:1px solid var(--panel-border);
+  border-top:none;
+  border-radius:0 0 10px 10px;
+  padding:16px;
+  min-height:320px;
 }
-
-/* Ritmo vertical interno — todo elemento que segue outro ganha margem */
 .panel > * + *{ margin-top:16px; }
 
+/* KPIs da Home */
+.stats{ display:grid; gap:10px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+.kpi{ font-size:28px; }
 
-/* ===========================
-   KPIs / ESTATÍSTICAS NA HOME
-   =========================== */
-.stats{
-  display:grid;                                  /* Layout em grid */
-  gap:10px;                                      /* Espaço entre cartões */
-  grid-template-columns: repeat(3, minmax(0,1fr)); /* Três colunas iguais e fluidas */
-}
-
-.kpi{ font-size:28px; } /* Destaque numérico para o indicador */
-
-
-/* ===========================
-   CARD (container com sombra)
-   =========================== */
+/* Cards */
 .card{
-  background:var(--card-bg);       /* Fundo levemente azulado (suave) */
-  border:1px solid var(--card-border); /* Borda clara para definição */
-  border-radius:10px;              /* Cantos arredondados */
-  padding:12px;                    /* Espaço interno */
-  box-shadow:var(--shadow);        /* Profundidade (elevação) */
+  background:var(--card-bg);
+  border:1px solid var(--card-border);
+  border-radius:10px;
+  padding:12px;
+  box-shadow:var(--shadow);
 }
 
+/* Grids e linhas utilitárias */
+.grid{ display:grid; gap:12px; }
+.grid-2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+.row{ display:flex; gap:10px; flex-wrap:wrap; }
 
-/* ===========================
-   GRIDS E LINHAS
-   - Utilitários genéricos para layout de formulários e seções.
-   =========================== */
-.grid{ display:grid; gap:12px; } /* Grid com espaçamento padrão */
-.grid-2{ grid-template-columns: repeat(2, minmax(0,1fr)); } /* Duas colunas iguais */
-.row{ display:flex; gap:10px; flex-wrap:wrap; } /* Linha flexível que quebra quando necessário */
-
-
-/* ===========================
-   FORMULÁRIOS
-   - Labels, inputs, selects e textareas com foco visível.
-   =========================== */
-label{ 
-  display:block;           /* Cada label em sua própria linha */
-  font-weight:600;         /* Ênfase no rótulo */
-  margin:10px 0 6px;       /* Espaçamento vertical consistente */
-}
-
+/* Formulários */
+label{ display:block; font-weight:600; margin:10px 0 6px; }
 input, textarea, select{
-  width:100%;                         /* Ocupar toda a largura do container */
-  padding:10px;                       /* Área clicável confortável */
-  border-radius:8px;                  /* Cantos arredondados */
-  border:1px solid var(--card-border);/* Borda clara em harmonia com cards */
-  background:#fff;                    /* Fundo branco (legível para texto) */
-  font:inherit;                       /* Herdar família e tamanho da fonte */
-  color:#111;                         /* Texto escuro para legibilidade */
-  transition:                         /* Feedback sutil ao focar */
-    border-color .12s ease, 
-    box-shadow .12s ease;
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid var(--card-border);
+  background:#fff;
+  font:inherit;
+  color:#111;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+textarea{ min-height:120px; resize:vertical; }
+input:focus-visible, textarea:focus-visible, select:focus-visible{
+  outline:none; border-color:#86b7ff; box-shadow:0 0 0 3px rgba(134,183,255,.35);
 }
 
-textarea{ 
-  min-height:120px; /* Altura inicial generosa para descrição */
-  resize:vertical;  /* Permite expandir verticalmente conforme necessidade */
-}
+/* Tabelas */
+table{ width:100%; border-collapse:collapse; background:#fff; }
+th, td{ padding:10px; border-bottom:1px solid #dde3f0; text-align:left; color:#111; }
+th{ background:#f3f5f9; }
 
-input:focus-visible, 
-textarea:focus-visible, 
-select:focus-visible{
-  outline:none;                           /* Remove outline default */
-  border-color:#86b7ff;                   /* Destaca a borda em foco */
-  box-shadow:0 0 0 3px rgba(134,183,255,.35); /* Halo azul suave (acessível) */
-}
-
-
-/* ===========================
-   TABELA
-   - Visual limpo para listas (chamados).
-   =========================== */
-table{ 
-  width:100%;              /* Ocupar a largura disponível */
-  border-collapse:collapse;/* Bordas colapsadas para um visual mais limpo */
-  background:#fff;         /* Fundo branco para contraste com texto escuro */
-}
-
-th, td{
-  padding:10px;                     /* Espaçamento interno */
-  border-bottom:1px solid #dde3f0;  /* Linha divisória entre linhas */
-  text-align:left;                  /* Alinhamento padrão à esquerda */
-  color:#111;                       /* Texto escuro */
-}
-
-th{ background:#f3f5f9; } /* Cabeçalho com fundo levemente cinza */
-
-
-/* ===========================
-   BOTÕES
-   - Estados de hover/active/focus/disabled.
-   =========================== */
+/* Botões */
 .btn{
-  padding:10px 14px;               /* Área clicável confortável */
-  border:0;                        /* Sem borda (usamos cor de fundo) */
-  border-radius:var(--radius);     /* Cantos arredondados (token) */
-  cursor:pointer;                  /* Indica interatividade */
-  font-weight:600;                 /* Ênfase no texto */
-  color:#e9f1ff;                   /* Texto claro sobre botão escuro */
-  background:var(--btn);           /* Cor base do botão */
-  box-shadow:var(--shadow);        /* Sombra padrão */
-  transition:                      /* Feedback sutil ao interagir */
-    transform .08s ease, 
-    filter .12s ease, 
-    background .12s ease, 
-    box-shadow .12s ease;
+  padding:10px 14px; border:0; border-radius:var(--radius); cursor:pointer; font-weight:600;
+  color:#e9f1ff; background:var(--btn); box-shadow:var(--shadow);
+  transition: transform .08s ease, filter .12s ease, background .12s ease, box-shadow .12s ease;
 }
+.btn:hover{ background:var(--btn-hover); filter:brightness(1.04); }
+.btn.primary{ background:var(--btn-ok); }
+.btn.primary:hover{ filter:brightness(1.05); }
+.btn.danger{ background:var(--btn-danger); }
+.btn.danger:hover{ filter:brightness(1.05); }
+.btn:active{ transform:translateY(1px) scale(.985); }
+.btn:focus-visible{ outline:3px solid rgba(134,183,255,.45); outline-offset:2px; }
+.btn:disabled{ opacity:.55; cursor:not-allowed; transform:none; box-shadow:none; }
 
-.btn:hover{ 
-  background:var(--btn-hover); /* Tom ligeiramente mais claro no hover */
-  filter:brightness(1.04);     /* Pequeno brilho para realce */
-}
-
-.btn.primary{ background:var(--btn-ok); }         /* Botão de ação principal (verde) */
-.btn.primary:hover{ filter:brightness(1.05); }    /* Realce suave no hover */
-
-.btn.danger{ background:var(--btn-danger); }      /* Botão de ação destrutiva (vermelho) */
-.btn.danger:hover{ filter:brightness(1.05); }     /* Realce suave no hover */
-
-.btn:active{ transform:translateY(1px) scale(.985); } /* “Afunda” no clique (feedback tátil visual) */
-
-.btn:focus-visible{ 
-  outline:3px solid rgba(134,183,255,.45); /* Halo de acessibilidade */
-  outline-offset:2px; 
-}
-
-.btn:disabled{ 
-  opacity:.55;           /* Indica estado desativado */
-  cursor:not-allowed;    /* Cursor de proibido */
-  transform:none;        /* Sem animação de clique */
-  box-shadow:none;       /* Sem sombra (menos destaque) */
-}
-
+/* Toolbar */
+.toolbar{ display:flex; gap:8px; align-items:center; }
 
 /* ===========================
-   TOOLBAR
-   - Agrupa botões e textos auxiliares numa linha flexível.
+   RODAPÉ FIXO (identificação)
+   - Mantém a autoria sempre visível.
+   - Usa backdrop/contraste fortes para leitura sobre fundo variado.
+   - Largura total, mas conteúdo centralizado como o .container.
    =========================== */
-.toolbar{ 
-  display:flex;          /* Linha flex */
-  gap:8px;               /* Espaço entre itens */
-  align-items:center;    /* Alinha verticalmente no centro */
+.site-footer{
+  position: fixed;           /* Cola na janela (sempre visível) */
+  left: 0; right: 0; bottom: 0; /* Alinha ao fundo e ocupa toda a largura */
+  background: var(--footer-bg); /* Fundo semitransparente para leveza */
+  border-top: 1px solid var(--footer-border); /* Linha separadora sutil */
+  color: var(--footer-fg);   /* Texto com alto contraste */
+  z-index: 999;              /* Fica acima do conteúdo */
+  /* Sem height fixa: deixamos o conteúdo dimensionar. Entretanto,
+     para reservar espaço no conteúdo, usamos --footer-h no .container */
+  padding: 10px 12px;        /* Respiro interno */
+  backdrop-filter: saturate(1.2) blur(2px); /* Efeito visual suave (onde suportado) */
 }
 
+/* Wrapper interno para espelharmos a largura do container da app */
+.site-footer__inner{
+  max-width: 1000px;         /* Mesma largura do .container para alinhamento visual */
+  margin: 0 auto;            /* Centraliza o conteúdo do rodapé */
+  display: flex;             /* Permite controlar alinhamentos e quebras */
+  align-items: center;       /* Centraliza verticalmente o texto */
+  justify-content: center;   /* Centraliza horizontalmente (pode virar space-between) */
+  gap: 8px;                  /* Espaço entre elementos internos (se houver ícones, etc.) */
+  text-align: center;        /* Centraliza em múltiplas linhas, se quebrar */
+  padding: 0 16px;           /* Respiro lateral */
+}
+
+/* Texto do rodapé: privilegia legibilidade em telas pequenas */
+.site-footer__text{
+  font-size: 14px;           /* Tamanho moderado (evita quebrar facilmente) */
+  line-height: 1.2;          /* Compensa o tamanho para boa leitura */
+  word-break: break-word;    /* Permite quebrar caso a largura fique muito pequena */
+}
 
 /* ===========================
    RESPONSIVIDADE
-   - Em telas pequenas a grid de duas colunas vira uma coluna.
-   - Painéis podem reduzir altura mínima para caber melhor.
+   - Ajustes para telas estreitas.
    =========================== */
 @media (max-width: 560px){
-  .grid-2{ grid-template-columns: 1fr; } /* Força uma coluna */
-  .panel{ min-height:260px; }            /* Diminui altura mínima */
+  .grid-2{ grid-template-columns: 1fr; }
+  .panel{ min-height:260px; }
+
+  /* Rodapé: fonte um pouco menor para caber melhor */
+  .site-footer__text{ font-size: 13px; }
 }

@@ -195,8 +195,26 @@
     </section>
   </main>
 
+  <!-- =================================================================
+       RODAPÉ FIXO (identificação dos criadores)
+       - <footer> semântico com role="contentinfo".
+       - Fica fixo ao fundo da janela (position: fixed) e sempre visível.
+       - O conteúdo principal ganha padding-bottom via CSS para não ficar
+         escondido sob o rodapé.
+       - Responsivo: texto quebra quando necessário, mantendo contraste.
+       ================================================================= -->
+  <footer class="site-footer" role="contentinfo" aria-label="Informações de autoria">
+    <div class="site-footer__inner">
+      <!-- Texto simples, com ênfase em nome e separador acessível -->
+      <span class="site-footer__text">
+        Criado por <strong>Mateus Pettenuzzo Novo</strong> <span aria-hidden="true">•</span>
+        <strong>Jonathan Marcelo Peres</strong>
+      </span>
+    </div>
+  </footer>
+
   <!--
-    Importa o JS. 
+    Importa o JS.
     Observação: sem módulos ES para funcionar com file:// em ambiente acadêmico.
   -->
   <script src="./js/app.js"></script>
